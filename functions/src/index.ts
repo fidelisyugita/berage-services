@@ -1,8 +1,6 @@
-import * as functions from 'firebase-functions';
+import * as place from './place';
+import * as highlight from './highlight';
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+
+exports.place = place;
+exports.highlight = highlight;
