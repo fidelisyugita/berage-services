@@ -1,21 +1,6 @@
 import { https, placesCollection } from "./utils";
 import * as dummy from "./dummy";
 
-exports.getPopular = https.onRequest(async (request, response) => {
-  console.log("request.query: ");
-  console.log(request.query);
-
-  const token = request.get("Token");
-  console.log("token");
-  console.log(token);
-
-  // decodedToken = await admin.auth().verifyIdToken(token);
-  // console.log('decodedToken');
-  // console.log(decodedToken);
-
-  response.send(dummy.places);
-});
-
 exports.popular = https.onCall((input, context) => {
   console.log("input: ");
   console.log(input);
@@ -35,17 +20,15 @@ exports.recommended = https.onCall(async (input, context) => {
   console.log(context.auth);
 
   try {
-    /**
-     * TODO
-     * transform data to readable in mobile
-     */
-    const response = await placesCollection.get();
-    console.log("response: ");
-    console.log(response);
+    const querySnapshot = await placesCollection.get();
+    const places = querySnapshot.docs.map((doc) => doc.data());
+
+    console.log("places: ");
+    console.log(places);
 
     return {
       ok: true,
-      payload: dummy.places,
+      payload: places,
     };
   } catch (error) {
     return {
@@ -64,16 +47,17 @@ exports.save = https.onCall(async (input, context) => {
   try {
     let response;
     if (input.id) {
-      //update
-      response = await placesCollection
-        .doc(input.id)
-        .set(input, { merge: true });
+      // update
+      await placesCollection.doc(input.id).set(input, { merge: true });
+      response = { id: input.id };
     } else {
       /**
        * TODO
        * make it return data in mobile, at least the id
        */
-      response = await placesCollection.add(input);}
+      const docRef = await placesCollection.add(input);
+      response = { id: docRef.id };
+    }
 
     console.log("response: ");
     console.log(response);
