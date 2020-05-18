@@ -1,4 +1,5 @@
 import { https, placesCollection } from "./utils";
+import { ERROR_401 } from "./consts";
 import * as dummy from "./dummy";
 
 exports.popular = https.onCall((input, context) => {
@@ -31,9 +32,10 @@ exports.recommended = https.onCall(async (input, context) => {
       payload: places,
     };
   } catch (error) {
+    console.error(error);
     return {
       ok: false,
-      error,
+      error: error,
     };
   }
 });
@@ -44,18 +46,36 @@ exports.save = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
+  if (!context.auth) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
+
   try {
     let response;
     if (input.id) {
       // update
-      await placesCollection.doc(input.id).set(input, { merge: true });
+      await placesCollection
+        .doc(input.id)
+        .set({ ...input, updatedAt: new Date() }, { merge: true });
       response = { id: input.id };
     } else {
-      /**
-       * TODO
-       * make it return data in mobile, at least the id
-       */
-      const docRef = await placesCollection.add(input);
+      const { token } = context.auth;
+      const currentUser = {
+        photoURL: token.picture,
+        displayName: token.name,
+        email: token.email,
+        uid: context.auth.uid,
+      };
+      const data = {
+        ...input,
+        createdBy: input.createdBy || currentUser,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      const docRef = await placesCollection.add(data);
       response = { id: docRef.id };
     }
 
@@ -67,9 +87,10 @@ exports.save = https.onCall(async (input, context) => {
       payload: response,
     };
   } catch (error) {
+    console.error(error);
     return {
       ok: false,
-      error,
+      error: error,
     };
   }
 });
