@@ -14,3 +14,4 @@ export const db = admin.firestore();
 
 export const placesCollection = db.collection("places");
 export const usersCollection = db.collection("users");
+export const favoritesCollection = db.collection("favorites");

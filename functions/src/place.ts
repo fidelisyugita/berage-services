@@ -9,7 +9,7 @@ exports.popular = https.onCall(async (input, context) => {
 
   try {
     const querySnapshot = await placesCollection.get();
-    const places = querySnapshot.docs.map((doc) => {
+    const response = querySnapshot.docs.map((doc) => {
       const data = {
         ...doc.data(),
         id: doc.id,
@@ -17,12 +17,12 @@ exports.popular = https.onCall(async (input, context) => {
       return data;
     });
 
-    console.log("places: ");
-    console.log(places);
+    console.log("response: ");
+    console.log(response);
 
     return {
       ok: true,
-      payload: places,
+      payload: response,
     };
   } catch (error) {
     console.error(error);
@@ -41,7 +41,7 @@ exports.recommended = https.onCall(async (input, context) => {
 
   try {
     const querySnapshot = await placesCollection.get();
-    const places = querySnapshot.docs.map((doc) => {
+    const response = querySnapshot.docs.map((doc) => {
       const data = {
         ...doc.data(),
         id: doc.id,
@@ -49,12 +49,12 @@ exports.recommended = https.onCall(async (input, context) => {
       return data;
     });
 
-    console.log("places: ");
-    console.log(places);
+    console.log("response: ");
+    console.log(response);
 
     return {
       ok: true,
-      payload: places,
+      payload: response,
     };
   } catch (error) {
     console.error(error);
