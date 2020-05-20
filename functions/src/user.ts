@@ -13,10 +13,10 @@ exports.create = auth.user().onCreate(async (user) => {
     displayName: user.displayName,
     email: user.email,
     emailVerified: user.emailVerified,
-    uid: user.uid,
+    id: user.uid,
   };
 
-  await usersCollection.add(data);
+  await usersCollection.doc(data.id).set(data, { merge: true });
 });
 
 exports.save = https.onCall(async (input, context) => {

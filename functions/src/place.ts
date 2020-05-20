@@ -1,17 +1,36 @@
 import { https, placesCollection } from "./utils";
 import { ERROR_401 } from "./consts";
-import * as dummy from "./dummy";
 
-exports.popular = https.onCall((input, context) => {
+exports.popular = https.onCall(async (input, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
   console.log(context.auth);
 
-  return {
-    ok: true,
-    payload: dummy.places,
-  };
+  try {
+    const querySnapshot = await placesCollection.get();
+    const places = querySnapshot.docs.map((doc) => {
+      const data = {
+        ...doc.data(),
+        id: doc.id,
+      };
+      return data;
+    });
+
+    console.log("places: ");
+    console.log(places);
+
+    return {
+      ok: true,
+      payload: places,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
 });
 
 exports.recommended = https.onCall(async (input, context) => {
@@ -22,7 +41,13 @@ exports.recommended = https.onCall(async (input, context) => {
 
   try {
     const querySnapshot = await placesCollection.get();
-    const places = querySnapshot.docs.map((doc) => doc.data());
+    const places = querySnapshot.docs.map((doc) => {
+      const data = {
+        ...doc.data(),
+        id: doc.id,
+      };
+      return data;
+    });
 
     console.log("places: ");
     console.log(places);
@@ -53,29 +78,31 @@ exports.save = https.onCall(async (input, context) => {
     };
   }
 
+  const { token } = context.auth;
+  const currentUser = {
+    photoURL: token.picture,
+    displayName: token.name,
+    email: token.email,
+    uid: context.auth.uid,
+  };
+  const data = {
+    ...input,
+    updatedBy: input.updatedBy || currentUser,
+    updatedAt: new Date(),
+  };
+
   try {
     let response;
     if (input.id) {
       // update
-      await placesCollection
-        .doc(input.id)
-        .set({ ...input, updatedAt: new Date() }, { merge: true });
+      await placesCollection.doc(input.id).set(data, { merge: true });
       response = { id: input.id };
     } else {
-      const { token } = context.auth;
-      const currentUser = {
-        photoURL: token.picture,
-        displayName: token.name,
-        email: token.email,
-        uid: context.auth.uid,
-      };
-      const data = {
-        ...input,
+      const docRef = await placesCollection.add({
+        ...data,
         createdBy: input.createdBy || currentUser,
         createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      const docRef = await placesCollection.add(data);
+      });
       response = { id: docRef.id };
     }
 
