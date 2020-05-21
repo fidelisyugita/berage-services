@@ -80,7 +80,7 @@ exports.save = https.onCall(async (input, context) => {
     await usersCollection
       .doc(userId)
       .set({ ...input, updatedAt: new Date() }, { merge: true });
-    const response = { id: userId };
+    const response = { ...input, id: userId };
 
     console.log("response: ");
     console.log(response);

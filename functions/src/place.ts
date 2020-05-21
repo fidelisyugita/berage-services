@@ -96,15 +96,58 @@ exports.save = https.onCall(async (input, context) => {
     if (input.id) {
       // update
       await placesCollection.doc(input.id).set(data, { merge: true });
-      response = { id: input.id };
+      response = { ...data, id: input.id };
     } else {
       const docRef = await placesCollection.add({
         ...data,
         createdBy: input.createdBy || currentUser,
         createdAt: new Date(),
       });
-      response = { id: docRef.id };
+      response = { ...data, id: docRef.id };
     }
+
+    console.log("response: ");
+    console.log(response);
+
+    return {
+      ok: true,
+      payload: response,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
+});
+
+exports.byUser = https.onCall(async (input, context) => {
+  console.log("input: ");
+  console.log(input);
+  console.log("context auth: ");
+  console.log(context.auth);
+
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
+
+  try {
+    const querySnapshot = await placesCollection
+      .where("updatedBy.uid", "==", userId)
+      .get();
+    const response = querySnapshot.docs.map((doc) => {
+      const data = {
+        ...doc.data(),
+        id: doc.id,
+      };
+      return data;
+    });
 
     console.log("response: ");
     console.log(response);
