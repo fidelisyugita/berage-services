@@ -1,5 +1,30 @@
-import { https, favoritesCollection } from "./utils";
+import {
+  https,
+  usersCollection,
+  placesCollection,
+  arrayUnion,
+  arrayRemove,
+} from "./utils";
 import { ERROR_401, ERROR_NO_DATA } from "./consts";
+import { DocumentSnapshot } from "firebase-functions/lib/providers/firestore";
+
+// exports.test = https.onRequest(async (request, response) => {
+//   const querySnapshot = await favoritesCollection
+//     .where("placeId", "in", "")
+//     .get();
+//   const favs = querySnapshot.docs.map((doc) => {
+//     const data = {
+//       ...doc.data(),
+//       id: doc.id,
+//     };
+//     return data;
+//   });
+
+//   console.log("favs: ");
+//   console.log(favs);
+
+//   response.send(favs);
+// });
 
 exports.get = https.onCall(async (input, context) => {
   console.log("input: ");
@@ -7,67 +32,39 @@ exports.get = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
-  try {
-    const querySnapshot = await favoritesCollection.get();
-    const response = querySnapshot.docs.map((doc) => {
-      const data = {
-        ...doc.data(),
-        id: doc.id,
-      };
-      return data;
-    });
+  const userId = (context.auth && context.auth.uid) || null;
 
-    console.log("response: ");
-    console.log(response);
-
-    return {
-      ok: true,
-      payload: response,
-    };
-  } catch (error) {
-    console.error(error);
-    return {
-      ok: false,
-      error: error,
-    };
-  }
-});
-
-exports.getById = https.onCall(async (input, context) => {
-  console.log("input: ");
-  console.log(input);
-  console.log("context auth: ");
-  console.log(context.auth);
-
-  if (!context.auth) {
+  if (!userId) {
     return {
       ok: false,
       error: ERROR_401,
     };
   }
 
-  if (!input.id) {
-    return {
-      ok: false,
-      error: ERROR_NO_DATA,
-    };
-  }
-
   try {
-    const documentSnapshot = await favoritesCollection.doc(input.id).get();
-    const data = documentSnapshot.data();
+    const documentSnapshot = await usersCollection.doc(userId).get();
+    const userData = documentSnapshot.data();
 
-    if (!data) {
-      return {
-        ok: false,
-        error: ERROR_NO_DATA,
-      };
+    let response: any[] = [];
+
+    if (userData && userData.favorites) {
+      const promises: Promise<DocumentSnapshot>[] = [];
+
+      userData.favorites.forEach((placeId: string) => {
+        console.log("fetching place " + placeId);
+        const promise = placesCollection.doc(placeId).get();
+        promises.push(promise);
+      });
+
+      const documentSnapshots = await Promise.all(promises);
+      response = documentSnapshots.map((doc) => {
+        const data = {
+          ...doc.data(),
+          id: doc.id,
+        };
+        return data;
+      });
     }
-
-    const response = {
-      ...data,
-      id: input.id,
-    };
 
     console.log("response: ");
     console.log(response);
@@ -91,34 +88,29 @@ exports.add = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
-  if (!context.auth) {
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
     return {
       ok: false,
       error: ERROR_401,
     };
   }
 
-  const { token } = context.auth;
-  const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
-    uid: context.auth.uid,
-  };
-  const data = {
-    ...input,
-    createdBy: input.createdBy || currentUser,
-    updatedBy: input.updatedBy || currentUser,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  if (!input.placeId) {
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  }
 
   try {
-    const docRef = await favoritesCollection.add(data);
-    const response = { id: docRef.id };
-
-    console.log("response: ");
-    console.log(response);
+    const userDoc = usersCollection.doc(userId);
+    await userDoc.update({
+      favorites: arrayUnion(input.placeId),
+    });
+    console.log("adding " + input.placeId + " to your favorites");
+    const response = { placeId: input.placeId };
 
     return {
       ok: true,
@@ -139,14 +131,16 @@ exports.remove = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
-  if (!context.auth) {
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
     return {
       ok: false,
       error: ERROR_401,
     };
   }
 
-  if (!input.id) {
+  if (!input.placeId) {
     return {
       ok: false,
       error: ERROR_NO_DATA,
@@ -154,11 +148,12 @@ exports.remove = https.onCall(async (input, context) => {
   }
 
   try {
-    await favoritesCollection.doc(input.id).delete();
-    const response = { id: input.id };
-
-    console.log("response: ");
-    console.log(response);
+    const userDoc = usersCollection.doc(userId);
+    await userDoc.update({
+      favorites: arrayRemove(input.placeId),
+    });
+    console.log("remove " + input.placeId + " from your favorites");
+    const response = { placeId: input.placeId };
 
     return {
       ok: true,

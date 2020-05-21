@@ -19,31 +19,68 @@ exports.create = auth.user().onCreate(async (user) => {
   await usersCollection.doc(data.id).set(data, { merge: true });
 });
 
-exports.save = https.onCall(async (input, context) => {
+exports.get = https.onCall(async (input, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
   console.log(context.auth);
 
-  if (!context.auth) {
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
     return {
       ok: false,
       error: ERROR_401,
     };
   }
 
-  if (!input.id) {
+  try {
+    const documentSnapshot = await usersCollection.doc(userId).get();
+    const userData = documentSnapshot.data();
+
+    if (userData) {
+      const response = { ...userData, id: userId };
+      console.log("response: ");
+      console.log(response);
+
+      return {
+        ok: true,
+        payload: response,
+      };
+    }
     return {
       ok: false,
       error: ERROR_NO_DATA,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
+});
+
+exports.save = https.onCall(async (input, context) => {
+  console.log("input: ");
+  console.log(input);
+  console.log("context auth: ");
+  console.log(context.auth);
+
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
+    return {
+      ok: false,
+      error: ERROR_401,
     };
   }
 
   try {
     await usersCollection
-      .doc(input.id)
+      .doc(userId)
       .set({ ...input, updatedAt: new Date() }, { merge: true });
-    const response = { id: input.id };
+    const response = { id: userId };
 
     console.log("response: ");
     console.log(response);
