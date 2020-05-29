@@ -15,5 +15,8 @@ export const cm = admin.messaging();
 export const placesCollection = db.collection("places");
 export const usersCollection = db.collection("users");
 export const inboxesCollection = db.collection("inboxes");
+export const bannesrCollection = db.collection("banners");
 
 export const { arrayUnion, arrayRemove } = admin.firestore.FieldValue;
+
+export const { serverTimestamp } = admin.firestore.FieldValue;

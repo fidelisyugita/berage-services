@@ -1,4 +1,4 @@
-import { https, placesCollection } from "./utils";
+import { https, placesCollection, serverTimestamp } from "./utils";
 import { ERROR_401 } from "./consts";
 
 exports.popular = https.onCall(async (input, context) => {
@@ -88,7 +88,7 @@ exports.save = https.onCall(async (input, context) => {
   const data = {
     ...input,
     updatedBy: input.updatedBy || currentUser,
-    updatedAt: new Date(),
+    updatedAt: serverTimestamp(),
   };
 
   try {
@@ -101,7 +101,7 @@ exports.save = https.onCall(async (input, context) => {
       const docRef = await placesCollection.add({
         ...data,
         createdBy: input.createdBy || currentUser,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
       });
       response = { ...data, id: docRef.id };
     }

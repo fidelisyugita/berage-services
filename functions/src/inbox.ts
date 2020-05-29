@@ -4,6 +4,7 @@ import {
   cm,
   inboxesCollection,
   usersCollection,
+  serverTimestamp,
 } from "./utils";
 import { ERROR_401 } from "./consts";
 
@@ -24,23 +25,26 @@ exports.sendNotif = firestore
     console.log(users);
 
     const tokens = users
-      .filter((user) => user.fcmToken.length > 0)
+      .filter((user) => user.fcmToken && user.fcmToken.length > 0)
       .map((user) => user.fcmToken);
 
-    /**
-     * TODO
-     * change message body
-     */
+    console.log("tokens: ");
+    console.log(tokens);
+
     const message = {
       notification: {
-        title: "Firebase Notification",
-        body: "testttttt",
+        title: (data && data.title) || "Title",
+        body: (data && data.description) || "Body",
         sound: "default",
         badge: "1",
       },
+      data: { score: "850", time: "2:45" },
+      tokens: tokens,
     };
 
-    await cm.sendToDevice(tokens, message);
+    const response = await cm.sendMulticast(message); //dunno why it isn't work
+    console.log("response: ");
+    console.log(response);
   });
 
 exports.get = https.onCall(async (input, context) => {
@@ -106,15 +110,13 @@ exports.save = https.onCall(async (input, context) => {
   const data = {
     ...input,
     updatedBy: input.updatedBy || currentUser,
-    updatedAt: new Date(),
+    updatedAt: serverTimestamp(),
+    createdBy: input.createdBy || currentUser,
+    createdAt: serverTimestamp(),
   };
 
   try {
-    const docRef = await inboxesCollection.add({
-      ...data,
-      createdBy: input.createdBy || currentUser,
-      createdAt: new Date(),
-    });
+    const docRef = await inboxesCollection.add(data);
     const response = { ...data, id: docRef.id };
 
     console.log("response: ");

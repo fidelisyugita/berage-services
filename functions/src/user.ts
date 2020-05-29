@@ -1,4 +1,4 @@
-import { https, auth, usersCollection } from "./utils";
+import { https, auth, usersCollection, serverTimestamp } from "./utils";
 import { ERROR_401, ERROR_NO_DATA } from "./consts";
 
 exports.create = auth.user().onCreate(async (user) => {
@@ -6,8 +6,8 @@ exports.create = auth.user().onCreate(async (user) => {
   console.log(user);
 
   const data = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     phoneNumber: user.phoneNumber,
     photoURL: user.photoURL,
     displayName: user.displayName,
@@ -79,8 +79,15 @@ exports.save = https.onCall(async (input, context) => {
   try {
     await usersCollection
       .doc(userId)
-      .set({ ...input, updatedAt: new Date() }, { merge: true });
-    const response = { ...input, id: userId };
+      .set({ ...input, updatedAt: serverTimestamp() }, { merge: true });
+
+    const documentSnapshot = await usersCollection.doc(userId).get();
+    const userData = documentSnapshot.data();
+
+    let response;
+
+    if (userData) response = { ...userData, id: userId };
+    else response = { ...input, id: userId };
 
     console.log("response: ");
     console.log(response);
