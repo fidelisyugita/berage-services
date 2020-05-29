@@ -88,7 +88,7 @@ exports.get = https.onCall(async (input, context) => {
   }
 });
 
-exports.save = https.onCall(async (input, context) => {
+exports.add = https.onCall(async (input, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -109,7 +109,10 @@ exports.save = https.onCall(async (input, context) => {
     uid: context.auth.uid,
   };
 
-  if (currentUser.email !== "fb46us@gmail.com") {
+  if (
+    currentUser.email !== "fb46us@gmail.com" &&
+    currentUser.email !== "fidelisyugita@gmail.com"
+  ) {
     return {
       ok: false,
       error: ERROR_401,
