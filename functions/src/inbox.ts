@@ -53,6 +53,15 @@ exports.get = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
+
   try {
     const querySnapshot = await inboxesCollection.get();
     const response = querySnapshot.docs.map((doc) => {
