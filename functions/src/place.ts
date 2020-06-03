@@ -1,7 +1,7 @@
 import { https, placesCollection, serverTimestamp } from "./utils";
-import { ERROR_401, ERROR_NO_DATA } from "./consts";
+import { ERROR_401, ERROR_NO_DATA, DATA_PER_PAGE } from "./consts";
 
-exports.get = https.onCall(async (input, context) => {
+exports.get = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -18,6 +18,8 @@ exports.get = https.onCall(async (input, context) => {
       .orderBy("name")
       .where("name", ">=", searchText)
       .where("name", "<=", searchText + "\uf8ff")
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -43,7 +45,7 @@ exports.get = https.onCall(async (input, context) => {
   }
 });
 
-exports.popular = https.onCall(async (input, context) => {
+exports.popular = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -52,6 +54,8 @@ exports.popular = https.onCall(async (input, context) => {
   try {
     const querySnapshot = await placesCollection
       .orderBy("popularAt", "desc")
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -77,7 +81,7 @@ exports.popular = https.onCall(async (input, context) => {
   }
 });
 
-exports.recommended = https.onCall(async (input, context) => {
+exports.recommended = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -86,6 +90,8 @@ exports.recommended = https.onCall(async (input, context) => {
   try {
     const querySnapshot = await placesCollection
       .orderBy("recommendedAt", "desc")
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -111,7 +117,11 @@ exports.recommended = https.onCall(async (input, context) => {
   }
 });
 
-exports.save = https.onCall(async (input, context) => {
+/**
+ * TODO
+ * decrease user limit to host
+ */
+exports.save = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -173,7 +183,7 @@ exports.save = https.onCall(async (input, context) => {
   }
 });
 
-exports.byUser = https.onCall(async (input, context) => {
+exports.byUser = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -191,6 +201,8 @@ exports.byUser = https.onCall(async (input, context) => {
   try {
     const querySnapshot = await placesCollection
       .where("updatedBy.uid", "==", userId)
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -216,7 +228,7 @@ exports.byUser = https.onCall(async (input, context) => {
   }
 });
 
-exports.setPopular = https.onCall(async (input, context) => {
+exports.setPopular = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -265,7 +277,7 @@ exports.setPopular = https.onCall(async (input, context) => {
   }
 });
 
-exports.setRecommended = https.onCall(async (input, context) => {
+exports.setRecommended = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -314,7 +326,11 @@ exports.setRecommended = https.onCall(async (input, context) => {
   }
 });
 
-exports.verify = https.onCall(async (input, context) => {
+/**
+ * TODO
+ * increase user limit to host
+ */
+exports.verify = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");

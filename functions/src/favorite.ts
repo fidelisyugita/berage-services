@@ -8,7 +8,7 @@ import {
 import { ERROR_401, ERROR_NO_DATA } from "./consts";
 import { DocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 
-exports.get = https.onCall(async (input, context) => {
+exports.get = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -64,7 +64,7 @@ exports.get = https.onCall(async (input, context) => {
   }
 });
 
-exports.add = https.onCall(async (input, context) => {
+exports.add = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -107,7 +107,7 @@ exports.add = https.onCall(async (input, context) => {
   }
 });
 
-exports.remove = https.onCall(async (input, context) => {
+exports.remove = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");

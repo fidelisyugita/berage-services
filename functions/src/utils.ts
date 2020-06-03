@@ -16,6 +16,7 @@ export const placesCollection = db.collection("places");
 export const usersCollection = db.collection("users");
 export const inboxesCollection = db.collection("inboxes");
 export const bannesrCollection = db.collection("banners");
+export const postsCollection = db.collection("posts");
 
 export const { arrayUnion, arrayRemove } = admin.firestore.FieldValue;
 

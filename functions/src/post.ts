@@ -1,4 +1,4 @@
-import { https, bannesrCollection, serverTimestamp } from "./utils";
+import { https, postsCollection, serverTimestamp, arrayUnion } from "./utils";
 import { ERROR_401, ERROR_NO_DATA, DATA_PER_PAGE } from "./consts";
 
 exports.get = https.onCall(async (input = {}, context) => {
@@ -7,8 +7,19 @@ exports.get = https.onCall(async (input = {}, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
+  const placeId = input.placeId || input.id;
+
+  if (!placeId) {
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  }
+
   try {
-    const querySnapshot = await bannesrCollection
+    const querySnapshot = await postsCollection
+      .where("placeId", "==", placeId)
+      .orderBy("updatedAt", "desc")
       .limit((input && input.limit) || DATA_PER_PAGE)
       .offset((input && input.offset) || 0)
       .get();
@@ -49,6 +60,15 @@ exports.add = https.onCall(async (input = {}, context) => {
     };
   }
 
+  const placeId = input.placeId;
+
+  if (!placeId) {
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  }
+
   const { token } = context.auth;
   const currentUser = {
     photoURL: token.picture,
@@ -56,16 +76,6 @@ exports.add = https.onCall(async (input = {}, context) => {
     email: token.email,
     uid: context.auth.uid,
   };
-
-  if (
-    currentUser.email !== "fb46us@gmail.com" &&
-    currentUser.email !== "fidelisyugita@gmail.com"
-  ) {
-    return {
-      ok: false,
-      error: ERROR_401,
-    };
-  }
 
   const data = {
     ...input,
@@ -76,7 +86,7 @@ exports.add = https.onCall(async (input = {}, context) => {
   };
 
   try {
-    const docRef = await bannesrCollection.add(data);
+    const docRef = await postsCollection.add(data);
     const response = { ...data, id: docRef.id };
 
     console.log("response: ");
@@ -95,38 +105,24 @@ exports.add = https.onCall(async (input = {}, context) => {
   }
 });
 
-exports.delete = https.onCall(async (input = {}, context) => {
+exports.like = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
   console.log(context.auth);
 
-  if (!context.auth) {
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
     return {
       ok: false,
       error: ERROR_401,
     };
   }
 
-  const { token } = context.auth;
-  const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
-    uid: context.auth.uid,
-  };
+  const postId = input.postId || input.id;
 
-  if (
-    currentUser.email !== "fb46us@gmail.com" &&
-    currentUser.email !== "fidelisyugita@gmail.com"
-  ) {
-    return {
-      ok: false,
-      error: ERROR_401,
-    };
-  }
-
-  if (!input.id) {
+  if (!postId) {
     return {
       ok: false,
       error: ERROR_NO_DATA,
@@ -134,7 +130,53 @@ exports.delete = https.onCall(async (input = {}, context) => {
   }
 
   try {
-    await bannesrCollection.doc(input.id).delete();
+    const postDoc = postsCollection.doc(postId);
+    await postDoc.update({
+      likedBy: arrayUnion(userId),
+    });
+
+    return {
+      ok: true,
+      payload: input,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
+});
+
+exports.dislike = https.onCall(async (input = {}, context) => {
+  console.log("input: ");
+  console.log(input);
+  console.log("context auth: ");
+  console.log(context.auth);
+
+  const userId = (context.auth && context.auth.uid) || null;
+
+  if (!userId) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
+
+  const postId = input.postId || input.id;
+
+  if (!postId) {
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  }
+
+  try {
+    const postDoc = postsCollection.doc(postId);
+    await postDoc.update({
+      dislikedBy: arrayUnion(userId),
+    });
 
     return {
       ok: true,

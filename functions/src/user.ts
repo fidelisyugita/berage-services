@@ -21,7 +21,7 @@ exports.create = auth.user().onCreate(async (user) => {
   await usersCollection.doc(data.id).set(data, { merge: true });
 });
 
-exports.get = https.onCall(async (input, context) => {
+exports.get = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -63,7 +63,7 @@ exports.get = https.onCall(async (input, context) => {
   }
 });
 
-exports.save = https.onCall(async (input, context) => {
+exports.save = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -107,7 +107,7 @@ exports.save = https.onCall(async (input, context) => {
   }
 });
 
-// exports.getByPlace = https.onCall(async (input, context) => {
+// exports.getByPlace = https.onCall(async (input = {}, context) => {
 //   console.log("input: ");
 //   console.log(input);
 //   console.log("context auth: ");
