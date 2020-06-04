@@ -88,8 +88,18 @@ exports.save = https.onCall(async (input = {}, context) => {
 
     let response;
 
-    if (userData) response = { ...userData, id: userId };
-    else response = { ...input, id: userId };
+    if (userData)
+      response = {
+        availableHostLeft: 1,
+        ...userData,
+        id: userId,
+      };
+    else
+      response = {
+        availableHostLeft: 1,
+        ...input,
+        id: userId,
+      };
 
     console.log("response: ");
     console.log(response);
