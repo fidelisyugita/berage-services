@@ -6,7 +6,7 @@ import {
   usersCollection,
   serverTimestamp,
 } from "./utils";
-import { ERROR_401 } from "./consts";
+import { ERROR_401, DATA_PER_PAGE } from "./consts";
 
 exports.sendNotif = firestore
   .document("inboxes/{id}")
@@ -53,17 +53,21 @@ exports.get = https.onCall(async (input, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
-  const userId = (context.auth && context.auth.uid) || null;
+  // const userId = (context.auth && context.auth.uid) || null;
 
-  if (!userId) {
-    return {
-      ok: false,
-      error: ERROR_401,
-    };
-  }
+  // if (!userId) {
+  //   return {
+  //     ok: false,
+  //     error: ERROR_401,
+  //   };
+  // }
 
   try {
-    const querySnapshot = await inboxesCollection.get();
+    const querySnapshot = await inboxesCollection
+      .orderBy("updatedAt", "desc")
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
+      .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
         ...doc.data(),
