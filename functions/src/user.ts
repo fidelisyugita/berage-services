@@ -1,5 +1,5 @@
 import { https, auth, usersCollection, serverTimestamp } from "./utils";
-import { ERROR_401, ERROR_NO_DATA } from "./consts";
+import { ERROR_401, ERROR_NO_DATA, DATA_PER_PAGE } from "./consts";
 // import { DocumentSnapshot } from "firebase-functions/lib/providers/firestore";
 
 exports.create = auth.user().onCreate(async (user) => {
@@ -21,7 +21,7 @@ exports.create = auth.user().onCreate(async (user) => {
   await usersCollection.doc(data.id).set(data, { merge: true });
 });
 
-exports.get = https.onCall(async (input = {}, context) => {
+exports.getById = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
@@ -117,67 +117,55 @@ exports.save = https.onCall(async (input = {}, context) => {
   }
 });
 
-// exports.getByPlace = https.onCall(async (input = {}, context) => {
-//   console.log("input: ");
-//   console.log(input);
-//   console.log("context auth: ");
-//   console.log(context.auth);
+exports.get = https.onCall(async (input = {}, context) => {
+  console.log("input: ");
+  console.log(input);
+  console.log("context auth: ");
+  console.log(context.auth);
 
-//   const userId = (context.auth && context.auth.uid) || null;
+  const userId = (context.auth && context.auth.uid) || null;
 
-//   if (!userId) {
-//     return {
-//       ok: false,
-//       error: ERROR_401,
-//     };
-//   }
+  if (!userId) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
 
-//   const placeId = input.placeId || input.id;
+  let searchText = input.searchText || "";
+  searchText = searchText.charAt(0).toUpperCase() + searchText.slice(1);
 
-//   if (!placeId) {
-//     return {
-//       ok: false,
-//       error: ERROR_NO_DATA,
-//     };
-//   }
+  console.log("searchText: ");
+  console.log(searchText);
 
-//   try {
-//     const documentSnapshot = await placesCollection.doc(placeId).get();
-//     const placeData = documentSnapshot.data();
+  try {
+    const querySnapshot = await usersCollection
+      .orderBy("displayName")
+      .where("displayName", ">=", searchText)
+      .where("displayName", "<=", searchText + "\uf8ff")
+      .limit((input && input.limit) || DATA_PER_PAGE)
+      .offset((input && input.offset) || 0)
+      .get();
+    const response = querySnapshot.docs.map((doc) => {
+      const data = {
+        ...doc.data(),
+        id: doc.id,
+      };
+      return data;
+    });
 
-//     let response: any[] = [];
+    console.log("response: ");
+    console.log(response);
 
-//     if (placeData && placeData.onlineUsers) {
-//       const promises: Promise<DocumentSnapshot>[] = [];
-
-//       placeData.onlineUsers.forEach((userId: string) => {
-//         console.log("fetching user " + userId);
-//         const promise = usersCollection.doc(userId).get();
-//         promises.push(promise);
-//       });
-
-//       const documentSnapshots = await Promise.all(promises);
-//       response = documentSnapshots.map((doc) => {
-//         const data = {
-//           ...doc.data(),
-//           id: doc.id,
-//         };
-//         return data;
-//       });
-//     }
-
-//     console.log("response: ");
-//     console.log(response);
-
-//     return {
-//       ok: true,
-//       payload: response,
-//     };
-//   } catch (error) {
-//     console.error(error);
-//     return {
-//       ok: false,
-//       error: error,
-//     };
-//   }
-// });
+    return {
+      ok: true,
+      payload: response,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
+});
