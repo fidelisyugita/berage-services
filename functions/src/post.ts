@@ -81,18 +81,29 @@ exports.add = https.onCall(async (input = {}, context) => {
   }
 
   const { token } = context.auth;
+  const { updatedBy } = input;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
-    uid: context.auth.uid,
+    photoURL: updatedBy ? updatedBy.photoURL : token.picture,
+    displayName: updatedBy ? updatedBy.displayName : token.name,
+    email: updatedBy ? updatedBy.email : token.email,
+    uid: updatedBy ? updatedBy.uid : context.auth.uid,
   };
+
+  if (
+    currentUser.email &&
+    currentUser.email.endsWith("cloudtestlabaccounts.com")
+  ) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
 
   const data = {
     ...input,
-    updatedBy: input.updatedBy || currentUser,
+    updatedBy: currentUser,
     updatedAt: serverTimestamp(),
-    createdBy: input.createdBy || currentUser,
+    createdBy: currentUser,
     createdAt: serverTimestamp(),
   };
 
@@ -216,14 +227,18 @@ exports.comment = https.onCall(async (input = {}, context) => {
   }
 
   const { token } = context.auth;
+  const { updatedBy } = input;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
-    uid: context.auth.uid,
+    photoURL: updatedBy ? updatedBy.photoURL : token.picture,
+    displayName: updatedBy ? updatedBy.displayName : token.name,
+    email: updatedBy ? updatedBy.email : token.email,
+    uid: updatedBy ? updatedBy.uid : context.auth.uid,
   };
 
-  if (currentUser.email && currentUser.email.endsWith("cloudtestlabaccounts.com")) {
+  if (
+    currentUser.email &&
+    currentUser.email.endsWith("cloudtestlabaccounts.com")
+  ) {
     return {
       ok: false,
       error: ERROR_401,
@@ -248,7 +263,7 @@ exports.comment = https.onCall(async (input = {}, context) => {
 
   const data = {
     ...input,
-    updatedBy: input.updatedBy || currentUser,
+    updatedBy: currentUser,
     updatedAt: serverTimestamp(),
   };
 
@@ -265,7 +280,7 @@ exports.comment = https.onCall(async (input = {}, context) => {
 
     const docRef = await commentsCollection.add({
       ...data,
-      createdBy: input.createdBy || currentUser,
+      createdBy: currentUser,
       createdAt: serverTimestamp(),
     });
     const response = { ...data, id: docRef.id };
