@@ -11,3 +11,7 @@ export const ERROR_NO_DATA = {
   // message: "Data not found.",
   message: "Data dakde.",
 };
+export const ERROR_NO_INPUT = {
+  // message: "Data not found.",
+  message: "Input dak lengkap.",
+};
