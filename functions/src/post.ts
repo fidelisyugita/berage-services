@@ -223,6 +223,13 @@ exports.comment = https.onCall(async (input = {}, context) => {
     uid: context.auth.uid,
   };
 
+  if (currentUser.email && currentUser.email.endsWith("cloudtestlabaccounts.com")) {
+    return {
+      ok: false,
+      error: ERROR_401,
+    };
+  }
+
   const { postId, text } = input;
 
   if (!postId) {
