@@ -7,7 +7,7 @@ if (!admin.apps.length) admin.initializeApp(functions.config().firebase);
 
 const myFunctions = functions.region(REGION);
 
-export const { https, auth, firestore } = myFunctions;
+export const { https, auth, firestore, database } = myFunctions;
 
 export const db = admin.firestore();
 export const cm = admin.messaging();
@@ -20,6 +20,8 @@ export const postsCollection = db.collection("posts");
 export const constantsCollection = db.collection("constants");
 export const commentsCollection = db.collection("comments");
 
-export const { arrayUnion, arrayRemove } = admin.firestore.FieldValue;
-
-export const { serverTimestamp } = admin.firestore.FieldValue;
+export const {
+  arrayUnion,
+  arrayRemove,
+  serverTimestamp,
+} = admin.firestore.FieldValue;

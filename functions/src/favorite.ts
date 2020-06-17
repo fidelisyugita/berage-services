@@ -30,7 +30,7 @@ exports.get = https.onCall(async (input = {}, context) => {
     let response: any[] = [];
 
     if (userData && userData.favorites) {
-      const promises: Promise<DocumentSnapshot>[] = [];
+      let promises: Promise<DocumentSnapshot>[] = [];
 
       userData.favorites.forEach((placeId: string) => {
         console.log("fetching place " + placeId);
