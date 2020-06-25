@@ -1,51 +1,5 @@
-import {
-  https,
-  firestore,
-  cm,
-  inboxesCollection,
-  usersCollection,
-  serverTimestamp,
-} from "./utils";
+import { https, inboxesCollection, serverTimestamp } from "./utils";
 import { ERROR_401, DATA_PER_PAGE } from "./consts";
-
-exports.sendNotif = firestore
-  .document("inboxes/{id}")
-  .onCreate(async (snap, context) => {
-    console.log("context: ");
-    console.log(context);
-
-    const data = snap.data();
-    console.log("data: ");
-    console.log(data);
-
-    const querySnapshot = await usersCollection.get();
-    const users = querySnapshot.docs.map((doc) => doc.data());
-
-    console.log("users: ");
-    console.log(users);
-
-    const tokens = users
-      .filter((user) => user.fcmToken && user.fcmToken.length > 0)
-      .map((user) => user.fcmToken);
-
-    console.log("tokens: ");
-    console.log(tokens);
-
-    const message = {
-      notification: {
-        title: (data && data.title) || "Title",
-        body: (data && data.description) || "Body",
-        sound: "default",
-        badge: "1",
-      },
-      data: { score: "850", time: "2:45" },
-      tokens: tokens,
-    };
-
-    const response = await cm.sendMulticast(message); //dunno why it isn't work
-    console.log("response: ");
-    console.log(response);
-  });
 
 exports.get = https.onCall(async (input, context) => {
   console.log("input: ");

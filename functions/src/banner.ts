@@ -1,11 +1,14 @@
 import { https, bannesrCollection, serverTimestamp } from "./utils";
 import { ERROR_401, ERROR_NO_DATA, DATA_PER_PAGE } from "./consts";
+// import * as logger from "firebase-functions/lib/logger";
 
 exports.get = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);
   console.log("context auth: ");
   console.log(context.auth);
+  // logger.log({ input });
+  // logger.log({ "context auth": context.auth });
 
   try {
     const querySnapshot = await bannesrCollection
@@ -21,7 +24,8 @@ exports.get = https.onCall(async (input = {}, context) => {
     });
 
     console.log("response: ");
-    console.log(response);
+    console.log({ response });
+    // logger.log({ response });
 
     return {
       ok: true,
@@ -29,6 +33,7 @@ exports.get = https.onCall(async (input = {}, context) => {
     };
   } catch (error) {
     console.error(error);
+    // logger.error({ error });
     return {
       ok: false,
       error: error,

@@ -1,25 +1,5 @@
-import { https, auth, usersCollection, serverTimestamp } from "./utils";
+import { https, usersCollection, serverTimestamp } from "./utils";
 import { ERROR_401, ERROR_NO_DATA, DATA_PER_PAGE } from "./consts";
-// import { DocumentSnapshot } from "firebase-functions/lib/providers/firestore";
-
-exports.create = auth.user().onCreate(async (user) => {
-  console.log("user: ");
-  console.log(user);
-
-  const data = {
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-    phoneNumber: user.phoneNumber,
-    photoURL: user.photoURL,
-    displayName: user.displayName,
-    email: user.email,
-    emailVerified: user.emailVerified,
-    id: user.uid,
-    availableHostLeft: 1,
-  };
-
-  await usersCollection.doc(data.id).set(data, { merge: true });
-});
 
 exports.getById = https.onCall(async (input = {}, context) => {
   console.log("input: ");
