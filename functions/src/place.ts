@@ -8,7 +8,7 @@ exports.get = https.onCall(async (input = {}, context) => {
   console.log(context.auth);
 
   let searchText = input.searchText || "";
-  searchText = searchText.charAt(0).toUpperCase() + searchText.slice(1);
+  searchText = searchText.toLowerCase();
 
   console.log("searchText: ");
   console.log(searchText);
@@ -18,9 +18,9 @@ exports.get = https.onCall(async (input = {}, context) => {
 
   try {
     const querySnapshot = await placesCollection
-      .orderBy("name")
-      .where("name", ">=", searchText)
-      .where("name", "<=", searchText + "\uf8ff")
+      .orderBy("name_lowercase")
+      .where("name_lowercase", ">=", searchText)
+      .where("name_lowercase", "<=", searchText + "\uf8ff")
       .limit(limit)
       .offset(offset)
       .get();
@@ -162,11 +162,12 @@ exports.save = https.onCall(async (input = {}, context) => {
   }
 
   let placeName = input.name || "";
-  placeName = placeName.charAt(0).toUpperCase() + placeName.slice(1);
+  placeName = placeName;
 
   const data = {
     ...input,
     name: placeName,
+    name_lowercase: placeName.toLowerCase(),
     updatedBy: input.updatedBy || currentUser,
     updatedAt: serverTimestamp(),
   };
