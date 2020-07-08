@@ -10,10 +10,13 @@ exports.get = https.onCall(async (input = {}, context) => {
   // logger.log({ input });
   // logger.log({ "context auth": context.auth });
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await bannesrCollection
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {

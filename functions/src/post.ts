@@ -27,12 +27,15 @@ exports.get = https.onCall(async (input = {}, context) => {
     };
   }
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await postsCollection
       .where("placeId", "==", placeId)
       .orderBy("updatedAt", "desc")
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -325,11 +328,14 @@ exports.getComments = https.onCall(async (input = {}, context) => {
     };
   }
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await commentsCollection
       .where("postId", "==", input.postId)
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {

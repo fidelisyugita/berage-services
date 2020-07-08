@@ -13,13 +13,16 @@ exports.get = https.onCall(async (input = {}, context) => {
   console.log("searchText: ");
   console.log(searchText);
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await placesCollection
       .orderBy("name")
       .where("name", ">=", searchText)
       .where("name", "<=", searchText + "\uf8ff")
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -51,11 +54,14 @@ exports.popular = https.onCall(async (input = {}, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await placesCollection
       .orderBy("popularAt", "desc")
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -87,11 +93,14 @@ exports.recommended = https.onCall(async (input = {}, context) => {
   console.log("context auth: ");
   console.log(context.auth);
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await placesCollection
       .orderBy("recommendedAt", "desc")
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
@@ -208,11 +217,14 @@ exports.byUser = https.onCall(async (input = {}, context) => {
     };
   }
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await placesCollection
       .where("updatedBy.uid", "==", userId)
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {

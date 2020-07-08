@@ -118,13 +118,16 @@ exports.get = https.onCall(async (input = {}, context) => {
   console.log("searchText: ");
   console.log(searchText);
 
+  const limit = (input && input.limit) || DATA_PER_PAGE;
+  const offset = input && input.page ? limit * input.page : 0;
+
   try {
     const querySnapshot = await usersCollection
       .orderBy("displayName")
       .where("displayName", ">=", searchText)
       .where("displayName", "<=", searchText + "\uf8ff")
-      .limit((input && input.limit) || DATA_PER_PAGE)
-      .offset((input && input.offset) || 0)
+      .limit(limit)
+      .offset(offset)
       .get();
     const response = querySnapshot.docs.map((doc) => {
       const data = {
