@@ -6,6 +6,7 @@ import {
   usersCollection,
   serverTimestamp,
 } from "./utils";
+import { INCOMING_CHAT } from "./consts";
 
 exports.createUser = auth.user().onCreate(async (user) => {
   console.log("user: ");
@@ -42,30 +43,30 @@ exports.sendNotif = firestore
     console.log("users: ");
     console.log(users);
 
-    const tokens = users
-      .filter((user) => user.fcmToken && user.fcmToken.length > 0)
-      .map((user) => user.fcmToken);
-
-    console.log("tokens: ");
-    console.log(tokens);
-
-    const message = {
-      notification: {
-        title: (data && data.title) || "Title",
-        body: (data && data.description) || "Body",
-        sound: "default",
-        badge: "1",
-      },
-      data: { score: "850", time: "2:45" },
-      // tokens: tokens,
-      tokens: [
-        "eRFXVnoG_70:APA91bHEj8o_uRsCbzTLwyjxJV1e4o3URqfNCb0Tda3pH-xn6G080REjBQJVQWHuLYguiJ0S5BpqKJMlK7pjCeMUQHxFslyzP5hoIvSvCzO7JueyslwXUYEnMbFJvh7eyKsLajgFai9m",
-      ],
+    const notification = {
+      title: (data && data.title) || "Title",
+      body: (data && data.description) || "Body",
     };
 
-    const response = await cm.sendMulticast(message); //dunno why it isn't work
-    console.log("response: ");
-    console.log(response);
+    let promises: any[] = [];
+    users.forEach((user) => {
+      if (user.fcmToken && user.fcmToken.length > 0) {
+        promises.push(
+          cm.send({
+            notification: notification,
+            token: user.fcmToken,
+          })
+        );
+      }
+    });
+
+    await Promise.all(promises);
+
+    // await cm.send({
+    //   notification: notification,
+    //   token:
+    //     "euPNym7SA8M:APA91bEtGh9HW0tgwKNGYBKjVrA_sXc8emrUgKYbhYRm2rJrq5jMcXgix02vs2yN5urplfTQ5PU6htjz1mAovhVsNFMgHewTZyrsGetDXUNjKVVQDdAlaajI-KyaTsWb-oBm1f2uImaR",
+    // });
   });
 
 exports.removeJoinChatUser = database
@@ -101,4 +102,29 @@ exports.removeJoinChatUser = database
     }
 
     return;
+  });
+
+exports.sendChatNotif = database
+  .ref("rooms/{senderId}/{receiverId}")
+  .onWrite(async (change, context) => {
+    // console.log("context: ");
+    // console.log(JSON.stringify(context, null, 2));
+    // console.log("change: ");
+    // console.log(JSON.stringify(change, null, 2));
+
+    const after = change.after.val();
+    const { user } = after;
+    console.log("user: ");
+    console.log(JSON.stringify(user, null, 2));
+
+    if (user.receiver && user.fcmToken) {
+      const message = {
+        notification: {
+          title: INCOMING_CHAT,
+          body: after.text,
+        },
+        token: user.fcmToken,
+      };
+      await cm.send(message);
+    }
   });
