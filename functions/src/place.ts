@@ -48,6 +48,46 @@ exports.get = https.onCall(async (input = {}, context) => {
   }
 });
 
+exports.getById = https.onCall(async (input = {}, context) => {
+  console.log("input: ");
+  console.log(input);
+  console.log("context auth: ");
+  console.log(context.auth);
+
+  if (!input.id) {
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  }
+
+  try {
+    const documentSnapshot = await placesCollection.doc(input.id).get();
+    const placeData = documentSnapshot.data();
+
+    if (placeData) {
+      const response = { ...placeData, id: input.id };
+      console.log("response: ");
+      console.log(response);
+
+      return {
+        ok: true,
+        payload: response,
+      };
+    }
+    return {
+      ok: false,
+      error: ERROR_NO_DATA,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      ok: false,
+      error: error,
+    };
+  }
+});
+
 exports.popular = https.onCall(async (input = {}, context) => {
   console.log("input: ");
   console.log(input);

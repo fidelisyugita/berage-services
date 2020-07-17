@@ -15,6 +15,7 @@ exports.get = https.onCall(async (input = {}, context) => {
 
   try {
     const querySnapshot = await bannesrCollection
+      .where("isDeleted", "==", false)
       .limit(limit)
       .offset(offset)
       .get();
@@ -77,6 +78,7 @@ exports.add = https.onCall(async (input = {}, context) => {
 
   const data = {
     ...input,
+    isDeleted: false,
     updatedBy: input.updatedBy || currentUser,
     updatedAt: serverTimestamp(),
     createdBy: input.createdBy || currentUser,
@@ -142,7 +144,10 @@ exports.delete = https.onCall(async (input = {}, context) => {
   }
 
   try {
-    await bannesrCollection.doc(input.id).delete();
+    // await bannesrCollection.doc(input.id).delete();
+    await bannesrCollection
+      .doc(input.id)
+      .set({ isDeleted: true }, { merge: true });
 
     return {
       ok: true,
