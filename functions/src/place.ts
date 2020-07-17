@@ -18,9 +18,10 @@ exports.get = https.onCall(async (input = {}, context) => {
 
   try {
     const querySnapshot = await placesCollection
-      .orderBy("name_lowercase")
+      .where("isDeleted", "==", false)
       .where("name_lowercase", ">=", searchText)
       .where("name_lowercase", "<=", searchText + "\uf8ff")
+      .orderBy("name_lowercase")
       .limit(limit)
       .offset(offset)
       .get();
@@ -99,6 +100,7 @@ exports.popular = https.onCall(async (input = {}, context) => {
 
   try {
     const querySnapshot = await placesCollection
+      .where("isDeleted", "==", false)
       .orderBy("popularAt", "desc")
       .limit(limit)
       .offset(offset)
@@ -138,6 +140,7 @@ exports.recommended = https.onCall(async (input = {}, context) => {
 
   try {
     const querySnapshot = await placesCollection
+      .where("isDeleted", "==", false)
       .orderBy("recommendedAt", "desc")
       .limit(limit)
       .offset(offset)
@@ -204,8 +207,13 @@ exports.save = https.onCall(async (input = {}, context) => {
   let placeName = input.name || "";
   placeName = placeName;
 
+  /**
+   * TODO
+   * move isDeleted in client side
+   */
   const data = {
     ...input,
+    isDeleted: false,
     name: placeName,
     name_lowercase: placeName.toLowerCase(),
     updatedBy: input.updatedBy || currentUser,
