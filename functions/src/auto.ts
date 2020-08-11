@@ -80,7 +80,7 @@ exports.removeJoinChatUser = database
 
     const ref = change.after.ref.parent; // reference to the items
     const now = Date.now();
-    const cutoff = now - 60 * 60 * 1000; // 60mins
+    const cutoff = now - 120 * 60 * 1000; // 120mins
 
     if (ref) {
       let oldItemsQuery = ref.orderByChild("timestamp").endAt(cutoff);
