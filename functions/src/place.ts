@@ -188,15 +188,16 @@ exports.save = https.onCall(async (input = {}, context) => {
 
   const { token } = context.auth;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
+    photoURL: token.picture || null,
+    displayName: token.name || null,
+    email: token.email || null,
     uid: context.auth.uid,
   };
 
   if (
     currentUser.email &&
-    currentUser.email.endsWith("cloudtestlabaccounts.com")
+    (currentUser.email.endsWith("cloudtestlabaccounts.com") ||
+      currentUser.email.endsWith("privaterelay.appleid.com"))
   ) {
     return {
       ok: false,
@@ -323,9 +324,9 @@ exports.setPopular = https.onCall(async (input = {}, context) => {
 
   const { token } = context.auth;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
+    photoURL: token.picture || null,
+    displayName: token.name || null,
+    email: token.email || null,
     uid: context.auth.uid,
   };
   const data = {
@@ -372,9 +373,9 @@ exports.setRecommended = https.onCall(async (input = {}, context) => {
 
   const { token } = context.auth;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
+    photoURL: token.picture || null,
+    displayName: token.name || null,
+    email: token.email || null,
     uid: context.auth.uid,
   };
   const data = {
@@ -425,9 +426,9 @@ exports.verify = https.onCall(async (input = {}, context) => {
 
   const { token } = context.auth;
   const currentUser = {
-    photoURL: token.picture,
-    displayName: token.name,
-    email: token.email,
+    photoURL: token.picture || null,
+    displayName: token.name || null,
+    email: token.email || null,
     uid: context.auth.uid,
   };
   const data = {

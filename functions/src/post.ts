@@ -86,9 +86,9 @@ exports.add = https.onCall(async (input = {}, context) => {
   const { token } = context.auth;
   const { updatedBy } = input;
   const currentUser = {
-    photoURL: updatedBy ? updatedBy.photoURL : token.picture,
-    displayName: updatedBy ? updatedBy.displayName : token.name,
-    email: updatedBy ? updatedBy.email : token.email,
+    photoURL: updatedBy ? updatedBy.photoURL : token.picture || null,
+    displayName: updatedBy ? updatedBy.displayName : token.name || null,
+    email: updatedBy ? updatedBy.email : token.email || null,
     uid: updatedBy ? updatedBy.uid : context.auth.uid,
   };
 
@@ -232,9 +232,9 @@ exports.comment = https.onCall(async (input = {}, context) => {
   const { token } = context.auth;
   const { updatedBy } = input;
   const currentUser = {
-    photoURL: updatedBy ? updatedBy.photoURL : token.picture,
-    displayName: updatedBy ? updatedBy.displayName : token.name,
-    email: updatedBy ? updatedBy.email : token.email,
+    photoURL: updatedBy ? updatedBy.photoURL : token.picture || null,
+    displayName: updatedBy ? updatedBy.displayName : token.name || null,
+    email: updatedBy ? updatedBy.email : token.email || null,
     uid: updatedBy ? updatedBy.uid : context.auth.uid,
   };
 
